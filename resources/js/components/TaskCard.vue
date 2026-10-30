@@ -50,9 +50,10 @@
           <span
             v-if="task.dueTime || task.due_time"
             :class="['meta-chip', (task.alarmEnabled || task.alarm_enabled) ? 'alarm-active' : '']"
+            dir="ltr"
           >
             <AppIcon :name="(task.alarmEnabled || task.alarm_enabled) ? 'notification-bing' : 'clock'" size="12" />
-            {{ toPersianDigits(task.dueTime || task.due_time) }}
+            <span dir="ltr">{{ toPersianDigits(task.dueTime || task.due_time) }}</span>
           </span>
 
           <!-- Subtasks -->

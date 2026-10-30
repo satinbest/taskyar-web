@@ -99,7 +99,7 @@
                 <button
                   type="button"
                   class="btn-icon text-red-500"
-                  @click="deleteCat(cat)"
+                  @click="promptDelete(cat)"
                   title="حذف"
                   aria-label="حذف"
                 >
@@ -107,6 +107,41 @@
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- In-App Safe Deletion Confirmation Dialog -->
+      <div v-if="catToDelete" class="cat-delete-confirm-overlay" @click.self="catToDelete = null">
+        <div class="cat-delete-confirm-box" role="alertdialog" aria-modal="true" aria-labelledby="catDelTitle">
+          <div class="cat-delete-icon">
+            <AppIcon name="trash" type="bulk" size="30" color="#ef4444" />
+          </div>
+          <h3 id="catDelTitle" class="cat-delete-title">تأیید حذف دسته‌بندی</h3>
+          <p class="cat-delete-msg">
+            آیا از حذف دسته‌بندی «<strong>{{ catToDelete.name }}</strong>» اطمینان دارید؟
+          </p>
+          <div class="cat-delete-safe-banner">
+            <AppIcon name="info-circle" size="16" color="#0284c7" />
+            <span>وظایف مرتبط با این دسته حذف نخواهند شد و به عنوان «بدون دسته‌بندی» باقی می‌مانند.</span>
+          </div>
+          <div class="cat-delete-actions">
+            <button
+              type="button"
+              class="btn-cancel-delete"
+              :disabled="isDeleting"
+              @click="catToDelete = null"
+            >
+              انصراف
+            </button>
+            <button
+              type="button"
+              class="btn-confirm-delete"
+              :disabled="isDeleting"
+              @click="confirmDeleteCat"
+            >
+              {{ isDeleting ? 'در حال حذف...' : 'بله، حذف دسته' }}
+            </button>
           </div>
         </div>
       </div>
@@ -145,11 +180,17 @@ const colorPalette = [
 const catName = ref('');
 const selectedColor = ref(colorPalette[0]);
 const editingId = ref(null);
+const catToDelete = ref(null);
+const isDeleting = ref(false);
 
 function handleKeyDown(e) {
   if (e.key === 'Escape' && props.isOpen) {
     e.preventDefault();
-    close();
+    if (catToDelete.value) {
+      catToDelete.value = null;
+    } else {
+      close();
+    }
   }
 }
 
@@ -160,6 +201,7 @@ watch(() => props.isOpen, (open) => {
     window.addEventListener('keydown', handleKeyDown);
     tasksStore.fetchCategories();
     cancelEdit();
+    catToDelete.value = null;
   } else {
     document.body.style.overflow = '';
     window.removeEventListener('keydown', handleKeyDown);
@@ -209,16 +251,29 @@ async function saveCategory() {
   }
 }
 
-async function deleteCat(cat) {
-  if (confirm(`آیا از حذف دسته «${cat.name}» مطمئن هستید؟ تسک‌های مربوط به این دسته حذف نمی‌شوند.`)) {
-    try {
-      await tasksStore.deleteCategory(cat.id);
-      if (editingId.value === cat.id) {
-        cancelEdit();
-      }
-    } catch (err) {
-      alert('خطا در حذف دسته');
+function promptDelete(cat) {
+  catToDelete.value = cat;
+}
+
+// Keep deleteCat as alias for backwards compatibility
+function deleteCat(cat) {
+  promptDelete(cat);
+}
+
+async function confirmDeleteCat() {
+  if (!catToDelete.value) return;
+  const cat = catToDelete.value;
+  isDeleting.value = true;
+  try {
+    await tasksStore.deleteCategory(cat.id);
+    if (editingId.value === cat.id) {
+      cancelEdit();
     }
+    catToDelete.value = null;
+  } catch (err) {
+    alert('خطا در حذف دسته: ' + (err.message || 'مشکلی رخ داد'));
+  } finally {
+    isDeleting.value = false;
   }
 }
 
@@ -430,6 +485,143 @@ function close() {
 
 .btn-save:disabled {
   opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* In-App Category Delete Confirmation */
+.cat-delete-confirm-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border-radius: var(--radius-lg, 20px);
+  animation: catConfirmFade 0.15s ease-out;
+}
+
+@keyframes catConfirmFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cat-delete-confirm-box {
+  background: var(--surface-solid, #ffffff);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+[data-mode="dark"] .cat-delete-confirm-box,
+.dark .cat-delete-confirm-box {
+  background: #0f172a;
+  border-color: rgba(51, 65, 85, 0.8);
+}
+
+.cat-delete-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #fee2e2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-mode="dark"] .cat-delete-icon,
+.dark .cat-delete-icon {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.cat-delete-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.cat-delete-msg {
+  font-size: 13px;
+  color: var(--text-main);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.cat-delete-safe-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: rgba(2, 132, 199, 0.08);
+  border: 1px solid rgba(2, 132, 199, 0.25);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 11.5px;
+  color: #0369a1;
+  text-align: right;
+  line-height: 1.4;
+}
+
+[data-mode="dark"] .cat-delete-safe-banner,
+.dark .cat-delete-safe-banner {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+}
+
+.cat-delete-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.btn-cancel-delete {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-main);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-cancel-delete:hover {
+  background: var(--bg-hover, rgba(0, 0, 0, 0.05));
+}
+
+.btn-confirm-delete {
+  flex: 1.2;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-confirm-delete:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.btn-confirm-delete:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
 }
 </style>

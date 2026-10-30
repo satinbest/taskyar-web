@@ -105,7 +105,6 @@
           <AppIcon name="status-up" :type="tasksStore.currentView === 'analytics' ? 'bulk' : 'linear'" size="20" />
           <span>آمار و پیشرفت</span>
         </div>
-        <span class="badge bg-purple-100 text-purple-700">📊</span>
       </li>
 
       <!-- Install Web App Option (when not standalone) -->

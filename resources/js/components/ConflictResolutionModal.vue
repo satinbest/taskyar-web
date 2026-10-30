@@ -69,7 +69,7 @@
               </div>
               <div v-if="conflictData?.client_payload?.dueTime || conflictData?.client_payload?.due_time">
                 <span class="field-label">ساعت:</span>
-                <span class="field-val">
+                <span class="field-val" dir="ltr">
                   {{ toPersianDigits(conflictData?.client_payload?.dueTime || conflictData?.client_payload?.due_time) }}
                 </span>
               </div>

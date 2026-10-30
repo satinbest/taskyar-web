@@ -1,8 +1,8 @@
 <template>
   <div class="progress-wrapper">
     <div class="progress-info">
-      <span>میزان پیشرفت لیست فعلی</span>
-      <span>{{ progressText }}</span>
+      <span class="progress-label">میزان پیشرفت لیست فعلی</span>
+      <span class="progress-stats">{{ progressText }}</span>
     </div>
     <div class="progress-track">
       <div class="progress-fill" :style="{ width: tasksStore.progressPercent + '%' }"></div>
@@ -21,6 +21,6 @@ const progressText = computed(() => {
   const total = tasksStore.filteredTasks.length;
   const done = tasksStore.completedTasks.length;
   const pct = tasksStore.progressPercent;
-  return `${toPersianDigits(pct)}% (${toPersianDigits(done)} از ${toPersianDigits(total)} انجام شده)`;
+  return `${toPersianDigits(pct)}٪ (${toPersianDigits(done)} از ${toPersianDigits(total)} انجام شده)`;
 });
 </script>

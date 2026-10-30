@@ -5,17 +5,24 @@
       type="button"
       ref="triggerRef"
       :id="id"
-      :class="['time-picker-trigger', isOpen ? 'open' : '', modelValue ? 'has-value' : '', customClass]"
+      :class="[
+        'time-picker-trigger',
+        isOpen ? 'open' : '',
+        modelValue ? 'has-value' : '',
+        compact && !modelValue ? 'is-compact-empty' : '',
+        customClass
+      ]"
       :disabled="disabled"
       @click="toggleDropdown"
-      :title="title || 'انتخاب ساعت انجام و آلارم'"
+      :title="title || (compact && !modelValue ? 'انتخاب ساعت' : 'انتخاب ساعت انجام و آلارم')"
+      :aria-label="title || (compact && !modelValue ? 'انتخاب ساعت' : 'انتخاب ساعت انجام و آلارم')"
       aria-haspopup="dialog"
       :aria-expanded="isOpen"
     >
       <span class="time-picker-icon">
         <AppIcon name="clock" size="15" />
       </span>
-      <span class="time-picker-text">
+      <span v-if="!compact || modelValue" class="time-picker-text" dir="ltr">
         {{ displayTime }}
       </span>
       <span v-if="modelValue && !disabled" class="time-clear-btn" @click.stop="clearTime" title="پاک کردن ساعت">
@@ -58,15 +65,15 @@
           <button type="button" class="time-panel-close-btn" @click="closeDropdown" title="بستن">✕</button>
         </div>
 
-        <!-- Mode Switcher Display (Hour / Minute Tabs) -->
-        <div class="time-segmented-display">
+        <!-- Mode Switcher Display (Hour / Minute Tabs) - Rendered LTR to enforce Hour on Left, Minute on Right -->
+        <div class="time-segmented-display" dir="ltr">
           <button
             type="button"
             :class="['time-segment-btn', activeTab === 'hour' ? 'active' : '']"
             @click="activeTab = 'hour'"
           >
             <span class="segment-label">ساعت</span>
-            <span class="segment-value">{{ toPersianDigits(String(selectedHour).padStart(2, '0')) }}</span>
+            <span class="segment-value" dir="ltr">{{ toPersianDigits(String(selectedHour).padStart(2, '0')) }}</span>
           </button>
           <span class="time-segment-colon">:</span>
           <button
@@ -75,7 +82,7 @@
             @click="activeTab = 'minute'"
           >
             <span class="segment-label">دقیقه</span>
-            <span class="segment-value">{{ toPersianDigits(String(selectedMinute).padStart(2, '0')) }}</span>
+            <span class="segment-value" dir="ltr">{{ toPersianDigits(String(selectedMinute).padStart(2, '0')) }}</span>
           </button>
         </div>
 
@@ -114,10 +121,10 @@
         <!-- Quick Presets -->
         <div class="time-panel-presets">
           <button type="button" class="preset-btn" @click="setTimeNow">الان</button>
-          <button type="button" class="preset-btn" @click="setPreset('09:00')">۰۹:۰۰</button>
-          <button type="button" class="preset-btn" @click="setPreset('14:00')">۱۴:۰۰</button>
-          <button type="button" class="preset-btn" @click="setPreset('18:00')">۱۸:۰۰</button>
-          <button type="button" class="preset-btn" @click="setPreset('21:00')">۲۱:۰۰</button>
+          <button type="button" class="preset-btn" dir="ltr" @click="setPreset('09:00')">۰۹:۰۰</button>
+          <button type="button" class="preset-btn" dir="ltr" @click="setPreset('14:00')">۱۴:۰۰</button>
+          <button type="button" class="preset-btn" dir="ltr" @click="setPreset('18:00')">۱۸:۰۰</button>
+          <button type="button" class="preset-btn" dir="ltr" @click="setPreset('21:00')">۲۱:۰۰</button>
         </div>
 
         <!-- Footer Actions -->
@@ -158,6 +165,10 @@ const props = defineProps({
   customClass: {
     type: String,
     default: ''
+  },
+  compact: {
+    type: Boolean,
+    default: false
   },
   dropUp: {
     type: Boolean,
@@ -438,6 +449,12 @@ onUnmounted(() => {
   background: #FFFFFF;
 }
 
+.time-picker-trigger.is-compact-empty {
+  padding: 6px 9px;
+  min-width: 36px;
+  justify-content: center;
+}
+
 .time-picker-icon {
   display: flex;
   align-items: center;
@@ -448,6 +465,10 @@ onUnmounted(() => {
   font-family: inherit;
   font-weight: 700;
   letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  direction: ltr !important;
+  unicode-bidi: isolate;
 }
 
 .time-clear-btn {

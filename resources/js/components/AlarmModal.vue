@@ -9,7 +9,7 @@
         {{ tasksStore.activeAlarmTask?.title }}
       </p>
       <p style="font-size: 12.5px; color: var(--text-muted);">
-        ساعت مقرر: {{ toPersianDigits(tasksStore.activeAlarmTask?.dueTime || tasksStore.activeAlarmTask?.due_time || '') }}
+        ساعت مقرر: <span dir="ltr" class="inline-block">{{ toPersianDigits(tasksStore.activeAlarmTask?.dueTime || tasksStore.activeAlarmTask?.due_time || '') }}</span>
       </p>
 
       <!-- Advanced Snooze Options -->

@@ -50,13 +50,17 @@
 
       <!-- Controls Row -->
       <div class="add-task-controls-row">
-        <!-- Category Selector -->
+        <!-- Category Selector Trigger -->
         <div class="relative category-selector">
           <button
             type="button"
+            ref="catBtnRef"
             class="cat-select-btn"
-            @click="catDropdownOpen = !catDropdownOpen"
-            :title="selectedCategoryName"
+            @click="toggleCatDropdown"
+            :title="'دسته‌بندی: ' + selectedCategoryName"
+            aria-label="انتخاب دسته‌بندی"
+            aria-haspopup="dialog"
+            :aria-expanded="catDropdownOpen"
           >
             <span
               class="cat-dot"
@@ -64,36 +68,78 @@
             ></span>
             <span class="cat-label">{{ selectedCategoryName }}</span>
           </button>
-
-          <div v-if="catDropdownOpen" class="cat-dropdown" @click.stop>
-            <div
-              class="cat-dropdown-item"
-              :class="{ active: selectedCategoryId === null }"
-              @click="selectCategory(null)"
-            >
-              <span class="cat-dot" style="background-color: #94a3b8;"></span>
-              <span>بدون دسته</span>
-            </div>
-            <div
-              v-for="cat in tasksStore.categories"
-              :key="cat.id"
-              class="cat-dropdown-item"
-              :class="{ active: selectedCategoryId === cat.id }"
-              @click="selectCategory(cat.id)"
-            >
-              <span class="cat-dot" :style="{ backgroundColor: cat.color || '#3b82f6' }"></span>
-              <span>{{ cat.name }}</span>
-            </div>
-            <div class="cat-dropdown-divider"></div>
-            <button
-              type="button"
-              class="cat-manage-btn"
-              @click="openCategoryManager"
-            >
-              + مدیریت دسته‌ها
-            </button>
-          </div>
         </div>
+
+        <!-- Teleported Category Dropdown / Mobile Bottom Sheet -->
+        <Teleport to="body">
+          <div
+            v-if="catDropdownOpen"
+            class="cat-picker-backdrop"
+            @click="catDropdownOpen = false"
+          ></div>
+
+          <div
+            v-if="catDropdownOpen"
+            class="cat-picker-panel"
+            :class="{ 'is-mobile-sheet': isMobileCat }"
+            :style="catPopoverStyle"
+            role="dialog"
+            aria-modal="true"
+            aria-label="انتخاب دسته‌بندی"
+            dir="rtl"
+            @keydown.esc="catDropdownOpen = false"
+          >
+            <!-- Mobile drag handle -->
+            <div v-if="isMobileCat" class="cat-sheet-handle-bar">
+              <div class="cat-sheet-handle"></div>
+            </div>
+
+            <!-- Header -->
+            <div class="cat-sheet-header">
+              <div class="cat-sheet-title">
+                <AppIcon name="folder" size="18" color="var(--primary)" />
+                <span>انتخاب دسته‌بندی</span>
+              </div>
+              <button type="button" class="cat-sheet-close-btn" @click="catDropdownOpen = false" title="بستن">✕</button>
+            </div>
+
+            <!-- List -->
+            <div class="cat-sheet-list">
+              <div
+                class="cat-sheet-item cat-dropdown-item"
+                :class="{ active: selectedCategoryId === null }"
+                @click="selectCategory(null)"
+              >
+                <span class="cat-dot" style="background-color: #94a3b8;"></span>
+                <span class="cat-sheet-item-name">بدون دسته‌بندی</span>
+                <span v-if="selectedCategoryId === null" class="cat-sheet-check">✓</span>
+              </div>
+
+              <div
+                v-for="cat in tasksStore.categories"
+                :key="cat.id"
+                class="cat-sheet-item cat-dropdown-item"
+                :class="{ active: selectedCategoryId === cat.id }"
+                @click="selectCategory(cat.id)"
+              >
+                <span class="cat-dot" :style="{ backgroundColor: cat.color || '#3b82f6' }"></span>
+                <span class="cat-sheet-item-name">{{ cat.name }}</span>
+                <span v-if="selectedCategoryId === cat.id" class="cat-sheet-check">✓</span>
+              </div>
+            </div>
+
+            <div class="cat-sheet-footer">
+              <button
+                type="button"
+                class="cat-manage-action-btn cat-manage-btn"
+                @click="openCategoryManager"
+              >
+                <AppIcon name="setting-2" size="16" />
+                <span>+ مدیریت دسته‌ها</span>
+              </button>
+            </div>
+          </div>
+        </Teleport>
 
         <!-- Recurrence Button -->
         <button
@@ -118,11 +164,12 @@
           placeholder="تاریخ"
         />
 
-        <!-- Time Picker -->
+        <!-- Time Picker (Compact Icon-Only When Empty) -->
         <PersianTimePicker
           id="newTaskTime"
           v-model="dueTime"
-          title="ساعت انجام و آلارم"
+          title="انتخاب ساعت"
+          :compact="true"
           :drop-up="true"
         />
 
@@ -163,7 +210,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useTasksStore } from '@/stores/tasks';
 import { getLocalISODate, toPersianDigits, formatPersianShortDate } from '@/utils/jalali';
 import { parsePersianQuickEntry } from '@/utils/quickParser';
@@ -181,7 +228,59 @@ const alarmEnabled = ref(false);
 const period = ref('daily');
 const selectedCategoryId = ref(null);
 const catDropdownOpen = ref(false);
+const catBtnRef = ref(null);
+const isMobileCat = ref(false);
+const catPopoverTop = ref(0);
+const catPopoverLeft = ref(0);
 const inputRef = ref(null);
+
+function checkMobileCat() {
+  if (typeof window !== 'undefined') {
+    isMobileCat.value = window.innerWidth <= 640;
+  }
+}
+
+function updateCatPosition() {
+  checkMobileCat();
+  if (isMobileCat.value || !catBtnRef.value) return;
+  const rect = catBtnRef.value.getBoundingClientRect();
+  catPopoverLeft.value = Math.max(12, rect.right - 180);
+  catPopoverTop.value = Math.max(12, rect.top - 230);
+}
+
+function toggleCatDropdown() {
+  catDropdownOpen.value = !catDropdownOpen.value;
+  if (catDropdownOpen.value) {
+    nextTick(() => {
+      updateCatPosition();
+    });
+  }
+}
+
+const catPopoverStyle = computed(() => {
+  if (isMobileCat.value) {
+    return {
+      position: 'fixed',
+      zIndex: 10050,
+      bottom: '0',
+      left: '0',
+      right: '0',
+      top: 'auto',
+      width: '100%',
+      maxWidth: '100%',
+      margin: '0 auto',
+      borderRadius: '24px 24px 0 0',
+      boxShadow: '0 -10px 40px rgba(15, 23, 42, 0.28)'
+    };
+  }
+  return {
+    position: 'fixed',
+    zIndex: 10050,
+    top: `${catPopoverTop.value}px`,
+    left: `${catPopoverLeft.value}px`,
+    width: '180px'
+  };
+});
 
 const recurrenceModalOpen = ref(false);
 const recurrenceRule = ref({
@@ -417,18 +516,27 @@ async function submitTask() {
 }
 
 function handleGlobalClick(e) {
-  if (!e.target.closest('.category-selector')) {
+  if (!e.target.closest('.category-selector') && !e.target.closest('.cat-picker-panel')) {
     catDropdownOpen.value = false;
   }
 }
 
 onMounted(() => {
   tasksStore.fetchCategories();
+  checkMobileCat();
   document.addEventListener('click', handleGlobalClick);
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', checkMobileCat);
+    window.addEventListener('scroll', updateCatPosition, true);
+  }
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', handleGlobalClick);
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('resize', checkMobileCat);
+    window.removeEventListener('scroll', updateCatPosition, true);
+  }
 });
 
 defineExpose({
@@ -698,5 +806,173 @@ defineExpose({
   .add-icon-lead {
     flex-shrink: 0;
   }
+}
+</style>
+
+<style>
+/* Teleported Category Panel & Mobile Bottom Sheet Styles */
+.cat-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 10049;
+  animation: catFadeIn 0.18s ease;
+}
+
+@keyframes catFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cat-picker-panel {
+  background: var(--surface-solid, #FFFFFF);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+  padding: 8px;
+  z-index: 10050;
+  animation: catPopIn 0.15s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+[data-mode="dark"] .cat-picker-panel,
+.dark .cat-picker-panel {
+  background: #0F172A;
+  border-color: rgba(51, 65, 85, 0.8);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes catPopIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile Bottom Sheet Layout */
+.cat-picker-panel.is-mobile-sheet {
+  border-radius: 24px 24px 0 0 !important;
+  border-bottom: none !important;
+  padding: 12px 18px 24px 18px !important;
+  animation: catSheetSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes catSheetSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.cat-sheet-handle-bar {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 8px;
+}
+
+.cat-sheet-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--border, #CBD5E1);
+}
+
+.cat-sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 6px;
+}
+
+.cat-sheet-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.cat-sheet-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.cat-sheet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.cat-sheet-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--text-main);
+  transition: all 0.15s;
+}
+
+.cat-sheet-item:hover {
+  background: var(--bg-hover, rgba(0, 0, 0, 0.05));
+}
+
+.cat-sheet-item.active {
+  background: var(--primary-light, #ede9fe);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+[data-mode="dark"] .cat-sheet-item.active,
+.dark .cat-sheet-item.active {
+  background: rgba(109, 40, 217, 0.25);
+  color: var(--primary);
+}
+
+.cat-sheet-item-name {
+  flex: 1;
+}
+
+.cat-sheet-check {
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--primary);
+}
+
+.cat-sheet-footer {
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+  margin-top: 4px;
+}
+
+.cat-manage-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 10px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cat-manage-action-btn:hover {
+  background: var(--bg-hover, rgba(0, 0, 0, 0.05));
 }
 </style>

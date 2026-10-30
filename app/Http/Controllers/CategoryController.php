@@ -97,7 +97,8 @@ class CategoryController extends Controller
     {
         Gate::authorize('delete', $category);
 
-        // Safe deletion: Category is deleted, but tasks have category_id set to null via foreign key nullOnDelete
+        // Safe deletion: explicitly dissociate tasks first so they become uncategorized across all MySQL/MariaDB engines
+        $category->tasks()->update(['category_id' => null]);
         $category->delete();
 
         return response()->json([
