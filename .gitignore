@@ -1,0 +1,135 @@
+# ==============================================================================
+# TaskYar Web 2.0 — Comprehensive .gitignore
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Environment & Sensitive Credentials
+# ------------------------------------------------------------------------------
+.env
+.env.backup
+.env.production
+.env.*.local
+.env.local
+.env.testing.local
+/auth.json
+
+# Allow safe configuration templates
+!.env.example
+!.env.production.example
+
+# ------------------------------------------------------------------------------
+# 2. Dependencies
+# ------------------------------------------------------------------------------
+/node_modules/
+/vendor/
+
+# ------------------------------------------------------------------------------
+# 3. Build & Compiled Outputs
+# ------------------------------------------------------------------------------
+/public/build/
+/public/hot
+/public/storage
+/public/fonts-manifest.dev.json
+
+# ------------------------------------------------------------------------------
+# 4. Storage & Framework Cache
+# ------------------------------------------------------------------------------
+/storage/app/*
+!/storage/app/.gitignore
+!/storage/app/public/
+/storage/app/public/*
+!/storage/app/public/.gitignore
+
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+!/storage/framework/cache/data/
+/storage/framework/cache/data/*
+!/storage/framework/cache/data/.gitignore
+!/storage/framework/cache/locks/
+/storage/framework/cache/locks/*
+!/storage/framework/cache/locks/.gitignore
+
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+
+/storage/framework/testing/*
+!/storage/framework/testing/.gitignore
+
+/storage/logs/*
+!/storage/logs/.gitignore
+*.log
+
+/storage/*.key
+/storage/pail
+
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+
+# ------------------------------------------------------------------------------
+# 5. Local Databases & Dumps
+# ------------------------------------------------------------------------------
+*.sqlite
+*.sqlite-journal
+*.sqlite3
+*.db
+/database/*.sqlite
+/database/*.sqlite-journal
+*.sql.gz
+*.sql.zip
+
+# ------------------------------------------------------------------------------
+# 6. Releases & Staging Archives
+# ------------------------------------------------------------------------------
+/releases/
+*.zip
+*.tar.gz
+*.tgz
+
+# ------------------------------------------------------------------------------
+# 7. Testing & Coverage Artifacts
+# ------------------------------------------------------------------------------
+/.phpunit.cache/
+/.phpunit.result.cache
+/coverage/
+/report/
+
+# ------------------------------------------------------------------------------
+# 8. Scratch & Reference Folders
+# ------------------------------------------------------------------------------
+/scratch/
+/reference/
+
+# ------------------------------------------------------------------------------
+# 9. IDE & Editor Artifacts
+# ------------------------------------------------------------------------------
+/.idea/
+/.vscode/
+/.zed/
+/.fleet/
+/.nova/
+/.cursor/
+/.codex/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.phpactor.json
+_ide_helper.php
+Homestead.json
+Homestead.yaml
+
+# ------------------------------------------------------------------------------
+# 10. Operating System Files
+# ------------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini

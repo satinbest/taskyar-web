@@ -1,0 +1,110 @@
+name: TaskYar Web CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  backend-tests:
+    name: Backend Tests & Quality (PHP 8.4)
+    runs-on: ubuntu-latest
+
+    services:
+      mariadb:
+        image: mariadb:10.6
+        env:
+          MYSQL_DATABASE: fileruni_taskyar
+          MYSQL_USER: taskyar_user
+          MYSQL_PASSWORD: secret_password
+          MYSQL_ROOT_PASSWORD: root_password
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo, pdo_mysql, pdo_sqlite, bcmath, json, curl, xml, zip, fileinfo
+          coverage: none
+
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer Dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Check Code Formatting (Laravel Pint)
+        run: vendor/bin/pint --test
+
+      - name: Prepare Environment File
+        run: |
+          cp .env.example .env
+          sed -i 's/DB_CONNECTION=sqlite/DB_CONNECTION=mysql/g' .env
+          sed -i 's/DB_HOST=localhost/DB_HOST=127.0.0.1/g' .env
+          sed -i 's/YOUR_DATABASE_USERNAME/taskyar_user/g' .env
+          sed -i 's/"YOUR_DATABASE_PASSWORD"/secret_password/g' .env
+
+      - name: Generate Application Key
+        run: php artisan key:generate
+
+      - name: Run Database Migrations
+        run: php artisan migrate --force
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: fileruni_taskyar
+          DB_USERNAME: taskyar_user
+          DB_PASSWORD: secret_password
+
+      - name: Execute PHPUnit Feature & Unit Tests
+        run: php artisan test --compact
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: fileruni_taskyar
+          DB_USERNAME: taskyar_user
+          DB_PASSWORD: secret_password
+
+  frontend-build:
+    name: Frontend Build & Asset Verification (Node.js 20)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Compile Production Frontend Assets (Vite)
+        run: npm run build
+
+      - name: Verify Manifest & Assets
+        run: |
+          test -f public/build/manifest.json || { echo "Missing manifest.json"; exit 1; }
+          test -f public/manifest.webmanifest || { echo "Missing manifest.webmanifest"; exit 1; }
+          test -f public/sw.js || { echo "Missing Service Worker"; exit 1; }
+          echo "Frontend assets compiled and verified successfully."

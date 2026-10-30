@@ -1,0 +1,88 @@
+{
+  "name": "تسک‌یار وب — مدیریت هوشمند کارها",
+  "short_name": "تسک‌یار",
+  "description": "سامانه مدرن مدیریت وظایف روزانه، هفتگی و ماهانه منطبق بر تقویم جلالی با قابلیت کارکرد آفلاین و یادآورهای هوشمند",
+  "id": "/?source=pwa",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0F172A",
+  "theme_color": "#6D28D9",
+  "dir": "rtl",
+  "lang": "fa",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/pwa-icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/pwa-icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/pwa-icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "ثبت کار جدید",
+      "short_name": "کار جدید",
+      "description": "افزودن سریع یک وظیفه جدید به تسک‌یار",
+      "url": "/app?action=new_task",
+      "icons": [
+        {
+          "src": "/pwa-icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "روز من",
+      "short_name": "روز من",
+      "description": "مشاهده وظایف تعیین‌شده برای امروز",
+      "url": "/app?view=myday",
+      "icons": [
+        {
+          "src": "/pwa-icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "برد ۷ روز هفته",
+      "short_name": "برد هفته",
+      "description": "برنامه‌ریزی کانبان هفتگی",
+      "url": "/app?view=weekboard",
+      "icons": [
+        {
+          "src": "/pwa-icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}
