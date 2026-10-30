@@ -1,6 +1,6 @@
 <template>
   <header class="main-header">
-    <div class="header-brand-group flex items-center gap-1.5 sm:gap-3 min-w-0 max-w-[95px] sm:max-w-none">
+    <div class="header-brand-group flex items-center gap-1.5 sm:gap-3 min-w-0">
       <!-- Mobile Sidebar Toggle -->
       <button
         class="mobile-hamburger-btn shrink-0"
@@ -38,29 +38,90 @@
           :title="authStore.darkMode ? 'تغییر به حالت روز' : 'تغییر به حالت شب'"
           aria-label="تغییر حالت شب و روز"
         >
-          <AppIcon :name="authStore.darkMode ? 'sun' : 'moon'" size="18" />
-          <span>{{ authStore.darkMode ? 'روز' : 'شب' }}</span>
+          <AppIcon
+            :name="authStore.darkMode ? 'sun' : 'moon'"
+            size="18"
+            :class="{ 'sun-active-icon': authStore.darkMode, 'moon-active-icon': !authStore.darkMode }"
+          />
+          <span class="btn-action-label">{{ authStore.darkMode ? 'روز' : 'شب' }}</span>
         </button>
 
+        <!-- Desktop-only inline actions -->
         <button
-          class="btn-header-action shortcuts-btn"
+          class="btn-header-action shortcuts-btn desktop-only"
           @click="$emit('open-shortcuts')"
           title="راهنمای کلیدهای میانبر (Ctrl+/)"
           aria-label="راهنمای کلیدهای میانبر"
         >
           <AppIcon name="command" size="18" />
-          <span>میانبرها</span>
+          <span class="btn-action-label">میانبرها</span>
         </button>
 
         <button
-          class="btn-header-action about-btn"
+          class="btn-header-action about-btn desktop-only"
           @click="$emit('open-about')"
           title="درباره تسک‌یار"
           aria-label="درباره تسک‌یار"
         >
           <AppIcon name="info-circle" size="18" />
-          <span>درباره</span>
+          <span class="btn-action-label">درباره</span>
         </button>
+
+        <!-- Mobile-only Overflow / More Menu Button -->
+        <div class="header-more-container relative mobile-only" ref="moreContainerRef">
+          <button
+            class="btn-header-action more-menu-btn"
+            @click.stop="toggleMoreMenu"
+            title="سایر امکانات و دسترسی سریع"
+            aria-label="سایر امکانات"
+            :aria-expanded="moreMenuOpen"
+          >
+            <AppIcon name="more" size="18" />
+          </button>
+
+          <!-- Mobile More Popover -->
+          <div
+            v-if="moreMenuOpen"
+            class="header-more-popover"
+            @click.stop
+          >
+            <div class="more-popover-header">
+              <span>امکانات و دسترسی سریع</span>
+              <button type="button" class="more-popover-close" @click="moreMenuOpen = false">✕</button>
+            </div>
+            <div class="more-popover-list">
+              <button
+                type="button"
+                class="more-popover-item shortcuts-btn"
+                @click="handleOpenShortcuts"
+              >
+                <div class="more-item-icon">
+                  <AppIcon name="command" size="18" color="var(--primary)" />
+                </div>
+                <div class="more-item-info">
+                  <span class="more-item-title">کلیدهای میانبر</span>
+                  <span class="more-item-sub">راهنمای کلیدها و ژست‌های حرکتی</span>
+                </div>
+                <span class="more-item-badge">Ctrl+/</span>
+              </button>
+
+              <button
+                type="button"
+                class="more-popover-item about-btn"
+                @click="handleOpenAbout"
+              >
+                <div class="more-item-icon">
+                  <AppIcon name="info-circle" size="18" color="var(--primary)" />
+                </div>
+                <div class="more-item-info">
+                  <span class="more-item-title">درباره تسک‌یار</span>
+                  <span class="more-item-sub">تسک‌یار وب، نسخه ۲.۰.۲</span>
+                </div>
+                <span class="more-item-badge">v2.0.2</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="theme-switcher-container relative" ref="themeContainerRef">
@@ -119,10 +180,12 @@ import { formatJalaliLong, toPersianDigits } from '@/utils/jalali';
 const authStore = useAuthStore();
 const tasksStore = useTasksStore();
 
-defineEmits(['open-shortcuts', 'open-about', 'toggle-sidebar']);
+const emit = defineEmits(['open-shortcuts', 'open-about', 'toggle-sidebar']);
 
 const themeContainerRef = ref(null);
+const moreContainerRef = ref(null);
 const themeMenuOpen = ref(false);
+const moreMenuOpen = ref(false);
 
 const themeList = [
   { id: 'default', name: 'بنفش', bg: 'linear-gradient(135deg, #6D28D9, #FCE7F3)', title: 'تم بنفش (پیش‌فرض)' },
@@ -134,6 +197,7 @@ const themeList = [
 function handleThemeClick(themeId) {
   if (typeof window !== 'undefined' && window.innerWidth <= 640) {
     themeMenuOpen.value = !themeMenuOpen.value;
+    moreMenuOpen.value = false;
   } else {
     authStore.setTheme(themeId);
   }
@@ -144,15 +208,34 @@ function selectTheme(themeId) {
   themeMenuOpen.value = false;
 }
 
+function toggleMoreMenu() {
+  moreMenuOpen.value = !moreMenuOpen.value;
+  themeMenuOpen.value = false;
+}
+
+function handleOpenShortcuts() {
+  moreMenuOpen.value = false;
+  emit('open-shortcuts');
+}
+
+function handleOpenAbout() {
+  moreMenuOpen.value = false;
+  emit('open-about');
+}
+
 function handleDocumentClick(e) {
   if (themeMenuOpen.value && themeContainerRef.value && !themeContainerRef.value.contains(e.target)) {
     themeMenuOpen.value = false;
   }
+  if (moreMenuOpen.value && moreContainerRef.value && !moreContainerRef.value.contains(e.target)) {
+    moreMenuOpen.value = false;
+  }
 }
 
 function handleKeyDown(e) {
-  if (e.key === 'Escape' && themeMenuOpen.value) {
-    themeMenuOpen.value = false;
+  if (e.key === 'Escape') {
+    if (themeMenuOpen.value) themeMenuOpen.value = false;
+    if (moreMenuOpen.value) moreMenuOpen.value = false;
   }
 }
 
@@ -228,6 +311,8 @@ const currentPersianDate = computed(() => {
   cursor: pointer;
   align-items: center;
   justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
 }
 
 @media (max-width: 768px) {
@@ -241,7 +326,21 @@ const currentPersianDate = computed(() => {
   align-items: center;
 }
 
+.desktop-only {
+  display: inline-flex;
+}
+
+.mobile-only {
+  display: none;
+}
+
 @media (max-width: 640px) {
+  .desktop-only {
+    display: none !important;
+  }
+  .mobile-only {
+    display: inline-flex !important;
+  }
   .mobile-hidden-dot {
     display: none !important;
   }
@@ -253,123 +352,116 @@ const currentPersianDate = computed(() => {
   }
 }
 
-@media (max-width: 480px) {
-  .header-brand-group {
-    max-width: 135px !important;
-    flex-shrink: 1 !important;
-  }
+.sun-active-icon {
+  color: #F59E0B;
+  filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.4));
 }
 
-@media (max-width: 360px) {
-  .main-header {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    padding: 6px 6px !important;
-    gap: 2px !important;
-  }
-  .header-brand-group {
-    max-width: 85px !important;
-    flex: 0 1 auto !important;
-  }
-  .header-date {
-    display: none !important;
-  }
-  .header-title h2 {
-    font-size: 12.5px !important;
-  }
-  .mobile-hamburger-btn {
-    padding: 3px !important;
-  }
-  .header-controls {
-    gap: 2px !important;
-  }
-  .header-quick-menu {
-    padding: 1px 2px !important;
-    gap: 1px !important;
-  }
-  .btn-header-action {
-    padding: 3px !important;
-    min-width: 24px !important;
-    min-height: 24px !important;
-  }
-  .theme-dot {
-    width: 15px !important;
-    height: 15px !important;
-  }
+.moon-active-icon {
+  color: var(--primary, #6D28D9);
 }
 
-.theme-mobile-popover {
+.theme-mobile-popover,
+.header-more-popover {
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
-  width: 170px;
   background: var(--surface-solid, #ffffff);
   border: 1px solid var(--border);
   border-radius: 14px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
   padding: 8px;
   z-index: 10050;
-  animation: themeFadeIn 0.15s ease-out;
+  animation: headerPopFadeIn 0.15s ease-out;
+}
+
+.theme-mobile-popover {
+  width: 170px;
+}
+
+.header-more-popover {
+  width: 220px;
 }
 
 [data-mode="dark"] .theme-mobile-popover,
-.dark .theme-mobile-popover {
+.dark .theme-mobile-popover,
+[data-mode="dark"] .header-more-popover,
+.dark .header-more-popover {
   background: #0f172a;
-  border-color: rgba(51, 65, 85, 0.8);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  border-color: rgba(51, 65, 85, 0.85);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
 }
 
-@keyframes themeFadeIn {
+@keyframes headerPopFadeIn {
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.theme-popover-header {
+.theme-popover-header,
+.more-popover-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 2px 4px 6px;
+  padding: 4px 6px 6px;
   border-bottom: 1px solid var(--border);
   font-size: 11px;
   font-weight: 700;
   color: var(--text-muted);
 }
 
-.theme-popover-close {
+.theme-popover-close,
+.more-popover-close {
   background: none;
   border: none;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-muted);
   cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
 }
 
-.theme-popover-list {
+.theme-popover-close:hover,
+.more-popover-close:hover {
+  background: var(--bg-hover, rgba(0, 0, 0, 0.05));
+  color: var(--text-main);
+}
+
+.theme-popover-list,
+.more-popover-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
   margin-top: 6px;
 }
 
-.theme-popover-item {
+.theme-popover-item,
+.more-popover-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-  border-radius: 8px;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
   border: 1px solid transparent;
   background: transparent;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--text-main);
   cursor: pointer;
   text-align: right;
   width: 100%;
-  transition: all 0.15s;
+  transition: all 0.15s ease;
 }
 
-.theme-popover-item:hover {
+.theme-popover-item:hover,
+.more-popover-item:hover {
   background: var(--bg-hover, rgba(0, 0, 0, 0.05));
+}
+
+[data-mode="dark"] .theme-popover-item:hover,
+.dark .theme-popover-item:hover,
+[data-mode="dark"] .more-popover-item:hover,
+.dark .more-popover-item:hover {
+  background: rgba(30, 41, 59, 0.8);
 }
 
 .theme-popover-item.active {
@@ -386,5 +478,77 @@ const currentPersianDate = computed(() => {
   font-size: 11px;
   color: var(--primary);
   font-weight: bold;
+}
+
+.more-item-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--primary-light, #ede9fe);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+[data-mode="dark"] .more-item-icon,
+.dark .more-item-icon {
+  background: rgba(139, 92, 246, 0.2);
+}
+
+.more-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.more-item-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.more-item-sub {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.more-item-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--bg-input, #f1f5f9);
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+@media (max-width: 480px) {
+  .header-brand-group {
+    max-width: 140px !important;
+    flex-shrink: 1 !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .main-header {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 6px 8px !important;
+    gap: 4px !important;
+  }
+  .header-brand-group {
+    max-width: 110px !important;
+    flex: 0 1 auto !important;
+  }
+  .header-date {
+    display: none !important;
+  }
+  .header-title h2 {
+    font-size: 13px !important;
+  }
 }
 </style>

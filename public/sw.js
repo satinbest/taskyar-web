@@ -1,6 +1,6 @@
 // TaskYar Web 2.0 — Production Service Worker
-// Cache Version: v2.0.0-rc4
-const CACHE_VERSION = 'taskyar-v2.0.1-mobile-refine';
+// Cache Version: v2.0.2-mobile-hotfix
+const CACHE_VERSION = 'taskyar-v2.0.2-mobile-hotfix';
 const STATIC_CACHE_NAME = `taskyar-static-${CACHE_VERSION}`;
 const SHELL_CACHE_NAME = `taskyar-shell-${CACHE_VERSION}`;
 

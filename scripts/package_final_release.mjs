@@ -10,6 +10,7 @@ const packageRoot = path.join(stagingDir, 'TaskYar-Web-2.0');
 const finalZipOutput = path.join(releasesDir, 'TaskYar-Web-2.0-FINAL-Stable.zip');
 const compatZipOutput = path.join(releasesDir, 'TaskYar-Web-2.0-FINAL-Production-Ready.zip');
 const stableProdZipOutput = path.join(releasesDir, 'TaskYar-Web-2.0-Stable-Production.zip');
+const v202ZipOutput = path.join(releasesDir, 'TaskYar-Web-2.0-Production-v2.0.2.zip');
 const tmpZipOutput = path.join(releasesDir, 'TaskYar-Web-2.0-FINAL-Stable.tmp.zip');
 
 console.log('=================================================================================');
@@ -153,6 +154,7 @@ if (fs.existsSync(finalZipOutput)) {
 fs.renameSync(tmpZipOutput, finalZipOutput);
 fs.copyFileSync(finalZipOutput, compatZipOutput);
 fs.copyFileSync(finalZipOutput, stableProdZipOutput);
+fs.copyFileSync(finalZipOutput, v202ZipOutput);
 
 // Clean staging directory
 fs.rmSync(stagingDir, { recursive: true, force: true });
@@ -162,7 +164,15 @@ const stat = fs.statSync(finalZipOutput);
 const hash = crypto.createHash('sha256').update(fs.readFileSync(finalZipOutput)).digest('hex');
 const mb = (stat.size / (1024 * 1024)).toFixed(2);
 
-const sha256Content = `${hash}  TaskYar-Web-2.0-Stable-Production.zip\n${hash}  TaskYar-Web-2.0-FINAL-Stable.zip\n`;
+// Check hotfix zip hash if exists
+const hotfixZip = path.join(releasesDir, 'TaskYar-Web-2.0-Mobile-UI-Hotfix.zip');
+let hotfixLine = '';
+if (fs.existsSync(hotfixZip)) {
+    const hotfixHash = crypto.createHash('sha256').update(fs.readFileSync(hotfixZip)).digest('hex');
+    hotfixLine = `${hotfixHash}  TaskYar-Web-2.0-Mobile-UI-Hotfix.zip\n`;
+}
+
+const sha256Content = `${hotfixLine}${hash}  TaskYar-Web-2.0-Production-v2.0.2.zip\n${hash}  TaskYar-Web-2.0-Stable-Production.zip\n${hash}  TaskYar-Web-2.0-FINAL-Stable.zip\n${hash}  TaskYar-Web-2.0-FINAL-Production-Ready.zip\n`;
 fs.writeFileSync(path.join(releasesDir, 'SHA256SUMS.txt'), sha256Content, 'utf8');
 
 console.log('=================================================================================');

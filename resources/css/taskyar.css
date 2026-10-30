@@ -1286,13 +1286,35 @@ body.board-view .detail-drawer.open {
     border-radius: 30px;
     border: 1px solid var(--border);
 }
+
+.dark .header-quick-menu,
+[data-mode="dark"] .header-quick-menu {
+    background: rgba(30, 41, 59, 0.85);
+    border-color: rgba(71, 85, 105, 0.8);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.dark .theme-switcher,
+[data-mode="dark"] .theme-switcher {
+    background: rgba(30, 41, 59, 0.85);
+    border-color: rgba(71, 85, 105, 0.8);
+}
+
+.dark .mobile-hamburger-btn,
+[data-mode="dark"] .mobile-hamburger-btn {
+    background: rgba(30, 41, 59, 0.85);
+    border-color: rgba(71, 85, 105, 0.8);
+    color: #F8FAFC;
+}
+
 .btn-header-action {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     background: transparent;
     border: none;
-    padding: 5px 9px;
+    padding: 6px 11px;
+    min-height: 34px;
     border-radius: 20px;
     color: var(--text-muted);
     font-size: 12px;
@@ -1301,13 +1323,26 @@ body.board-view .detail-drawer.open {
     cursor: pointer;
     transition: var(--transition);
 }
+
+.dark .btn-header-action,
+[data-mode="dark"] .btn-header-action {
+    color: #E2E8F0;
+}
+
 .btn-header-action:hover {
     background: var(--primary-light);
     color: var(--primary);
 }
+
+.dark .btn-header-action:hover,
+[data-mode="dark"] .btn-header-action:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--primary);
+}
+
 .btn-header-action svg {
-    width: 15px;
-    height: 15px;
+    width: 17px;
+    height: 17px;
 }
 
 /* Wide Modals */
@@ -1526,16 +1561,16 @@ textarea:focus-visible,
     }
 
     .header-quick-menu {
-        padding: 2px 4px !important;
-        gap: 3px !important;
+        padding: 3px 5px !important;
+        gap: 4px !important;
         flex-shrink: 0 !important;
     }
 
     .btn-header-action {
-        padding: 6px 7px !important;
+        padding: 6px !important;
         font-size: 11px !important;
-        min-width: 32px !important;
-        min-height: 32px !important;
+        min-width: 36px !important;
+        min-height: 36px !important;
         justify-content: center !important;
     }
 
@@ -1708,17 +1743,17 @@ textarea:focus-visible,
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
-        padding: 6px 6px !important;
-        gap: 2px !important;
+        padding: 6px 8px !important;
+        gap: 4px !important;
     }
 
     .header-brand-group {
-        max-width: 85px !important;
+        max-width: 115px !important;
         flex: 0 1 auto !important;
     }
 
     .header-title h2 {
-        font-size: 12.5px !important;
+        font-size: 13px !important;
     }
 
     .header-date {
@@ -1726,27 +1761,29 @@ textarea:focus-visible,
     }
 
     .mobile-hamburger-btn {
-        padding: 3px !important;
+        padding: 4px !important;
+        min-width: 34px !important;
+        min-height: 34px !important;
     }
 
     .header-controls {
-        gap: 2px !important;
+        gap: 4px !important;
     }
 
     .header-quick-menu {
-        padding: 1px 2px !important;
-        gap: 1px !important;
+        padding: 2px 3px !important;
+        gap: 3px !important;
     }
 
     .btn-header-action {
-        padding: 3px !important;
-        min-width: 24px !important;
-        min-height: 24px !important;
+        padding: 5px !important;
+        min-width: 34px !important;
+        min-height: 34px !important;
     }
 
     .theme-dot {
-        width: 15px !important;
-        height: 15px !important;
+        width: 18px !important;
+        height: 18px !important;
     }
 }
 
