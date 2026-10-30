@@ -164,18 +164,20 @@ npm run dev
    ```bash
    * * * * * /usr/local/php-8.4/bin/php /home/USERNAME/domains/YOURDOMAIN.COM/taskyar_core/artisan schedule:run >> /dev/null 2>&1
    ```
-*(مستندات کامل در [docs/INSTALL_DIRECTADMIN_FA.md](docs/INSTALL_DIRECTADMIN_FA.md) در دسترس است).*
+*(مستندات کامل در [راهنمای جامع نصب تازه روی دایرکت‌ادمین](docs/INSTALL_FRESH_FA.md) و [docs/INSTALL_DIRECTADMIN_FA.md](docs/INSTALL_DIRECTADMIN_FA.md) در دسترس است).*
 
 ---
 
 ## 🔄 ۹. به‌روزرسانی نسخه‌های قبلی (Updating)
 
-هنگام آپدیت به نسخه‌های جدید، **فایل `.env`، پوشه `storage/` و دیتابیس MariaDB نباید حذف شوند**. کافی است کدهای جدید جایگزین شده و دستور زیر اجرا شود:
+هنگام آپدیت به نسخه‌های جدید، **فایل `.env`، پوشه `storage/`، کلید `APP_KEY` و دیتابیس MariaDB نباید حذف یا بازنویسی شوند**. کافی است کدهای جدید جایگزین شده و دستورات زیر با مفسر PHP 8.4 اجرا شود:
 ```bash
 /usr/local/php-8.4/bin/php artisan migrate --force
 /usr/local/php-8.4/bin/php artisan optimize
 ```
-*(مستندات تکمیلی در [docs/UPDATE_GUIDE_FA.md](docs/UPDATE_GUIDE_FA.md))*.
+> [!IMPORTANT]
+> هرگز در فرآیند به‌روزرسانی از دستورات مخرب نظیر `migrate:fresh` یا `db:wipe` یا `key:generate` استفاده نکنید!
+*(راهنمای تفصیلی گام‌به‌گام ارتقای بدون ریسک در [docs/UPGRADE_TO_V2.0.2_FA.md](docs/UPGRADE_TO_V2.0.2_FA.md) در دسترس است).*
 
 ---
 
@@ -206,8 +208,9 @@ npm run dev
 ## 📦 ۱۳. دانلود نسخه‌ها (Releases)
 
 تمامی نسخه‌های پایدار و بسته‌های آماده استقرار در صفحه [GitHub Releases](../../releases) منتشر می‌شوند:
-- بسته آماده پروداکشن: `TaskYar-Web-2.0-Stable-Production.zip`
-- چک‌سام اعتبارسنجی: `SHA256SUMS.txt`
+- **بسته کامل پروداکشن (نصب تازه یا ارتقای استاندارد):** `TaskYar-Web-v2.0.2-Stable-Full.zip` (۱۳.۴۳ مگابایت، بدون نیاز به کامپوزر)
+- **بسته سبک به‌روزرسانی (هاست‌های فعلی):** `TaskYar-Web-2.0-Mobile-UI-Hotfix.zip` (۱۹۱ کیلوبایت)
+- **چک‌سام اعتبارسنجی SHA-256:** `SHA256SUMS.txt`
 
 ---
 

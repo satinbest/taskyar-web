@@ -11,6 +11,7 @@ const finalZipOutput = path.join(releasesDir, 'TaskYar-Web-2.0-FINAL-Stable.zip'
 const compatZipOutput = path.join(releasesDir, 'TaskYar-Web-2.0-FINAL-Production-Ready.zip');
 const stableProdZipOutput = path.join(releasesDir, 'TaskYar-Web-2.0-Stable-Production.zip');
 const v202ZipOutput = path.join(releasesDir, 'TaskYar-Web-2.0-Production-v2.0.2.zip');
+const stableFullZipOutput = path.join(releasesDir, 'TaskYar-Web-v2.0.2-Stable-Full.zip');
 const tmpZipOutput = path.join(releasesDir, 'TaskYar-Web-2.0-FINAL-Stable.tmp.zip');
 
 console.log('=================================================================================');
@@ -130,6 +131,21 @@ fs.copyFileSync(path.join(workspaceRoot, 'artisan'), path.join(packageRoot, 'art
 fs.copyFileSync(path.join(workspaceRoot, 'composer.json'), path.join(packageRoot, 'composer.json'));
 fs.copyFileSync(path.join(workspaceRoot, 'composer.lock'), path.join(packageRoot, 'composer.lock'));
 fs.copyFileSync(path.join(workspaceRoot, '.env.example'), path.join(packageRoot, '.env.example'));
+if (fs.existsSync(path.join(workspaceRoot, 'CHANGELOG.md'))) {
+    fs.copyFileSync(path.join(workspaceRoot, 'CHANGELOG.md'), path.join(packageRoot, 'CHANGELOG.md'));
+}
+if (fs.existsSync(path.join(workspaceRoot, 'README.md'))) {
+    fs.copyFileSync(path.join(workspaceRoot, 'README.md'), path.join(packageRoot, 'README.md'));
+}
+if (fs.existsSync(path.join(workspaceRoot, 'LICENSE'))) {
+    fs.copyFileSync(path.join(workspaceRoot, 'LICENSE'), path.join(packageRoot, 'LICENSE'));
+}
+if (fs.existsSync(path.join(workspaceRoot, 'UPDATE_MANIFEST.md'))) {
+    fs.copyFileSync(path.join(workspaceRoot, 'UPDATE_MANIFEST.md'), path.join(packageRoot, 'UPDATE_MANIFEST.md'));
+}
+if (fs.existsSync(path.join(workspaceRoot, 'UPDATE_INSTRUCTIONS_FA.md'))) {
+    fs.copyFileSync(path.join(workspaceRoot, 'UPDATE_INSTRUCTIONS_FA.md'), path.join(packageRoot, 'UPDATE_INSTRUCTIONS_FA.md'));
+}
 
 // 6. Restore development dependencies in workspace
 console.log('\n4. Restoring full development dependencies in dev workspace...');
@@ -155,6 +171,7 @@ fs.renameSync(tmpZipOutput, finalZipOutput);
 fs.copyFileSync(finalZipOutput, compatZipOutput);
 fs.copyFileSync(finalZipOutput, stableProdZipOutput);
 fs.copyFileSync(finalZipOutput, v202ZipOutput);
+fs.copyFileSync(finalZipOutput, stableFullZipOutput);
 
 // Clean staging directory
 fs.rmSync(stagingDir, { recursive: true, force: true });
@@ -172,7 +189,7 @@ if (fs.existsSync(hotfixZip)) {
     hotfixLine = `${hotfixHash}  TaskYar-Web-2.0-Mobile-UI-Hotfix.zip\n`;
 }
 
-const sha256Content = `${hotfixLine}${hash}  TaskYar-Web-2.0-Production-v2.0.2.zip\n${hash}  TaskYar-Web-2.0-Stable-Production.zip\n${hash}  TaskYar-Web-2.0-FINAL-Stable.zip\n${hash}  TaskYar-Web-2.0-FINAL-Production-Ready.zip\n`;
+const sha256Content = `${hotfixLine}${hash}  TaskYar-Web-v2.0.2-Stable-Full.zip\n${hash}  TaskYar-Web-2.0-Production-v2.0.2.zip\n${hash}  TaskYar-Web-2.0-Stable-Production.zip\n${hash}  TaskYar-Web-2.0-FINAL-Stable.zip\n${hash}  TaskYar-Web-2.0-FINAL-Production-Ready.zip\n`;
 fs.writeFileSync(path.join(releasesDir, 'SHA256SUMS.txt'), sha256Content, 'utf8');
 
 console.log('=================================================================================');

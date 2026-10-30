@@ -11,14 +11,14 @@ const RELEASES_DIR = path.resolve('releases');
 
 const ASSETS = [
   {
-    path: path.join(RELEASES_DIR, 'TaskYar-Web-2.0-Mobile-UI-Hotfix.zip'),
+    path: path.join(RELEASES_DIR, 'TaskYar-Web-v2.0.2-Stable-Full.zip'),
     type: 'application/zip',
-    desc: 'بسته به‌روزرسانی سبک (۱۹۱ کیلوبایت) برای ارتقای آسان هاست‌های قبلی بدون نیاز به تغییر دیتابیس یا vendor'
+    desc: 'بسته کامل پروداکشن (Stand-alone Full Release) شامل تمامی وابستگی‌های PHP 8.4 در vendor/ و است‌های بیلدشده'
   },
   {
-    path: path.join(RELEASES_DIR, 'TaskYar-Web-2.0-Production-v2.0.2.zip'),
+    path: path.join(RELEASES_DIR, 'TaskYar-Web-2.0-Mobile-UI-Hotfix.zip'),
     type: 'application/zip',
-    desc: 'بسته کامل نصب پروداکشن برای نصب‌های تازه شامل تمامی وابستگی‌های PHP 8.4 در vendor/'
+    desc: 'بسته به‌روزرسانی سبک (۱۹۱ کیلوبایت) برای ارتقای آسان هاست‌های قبلی بدون نیاز به دانلود مجدد vendor'
   },
   {
     path: path.join(RELEASES_DIR, 'SHA256SUMS.txt'),
@@ -154,9 +154,15 @@ async function publish() {
 
 | نام فایل | حجم | کاربرد |
 | :--- | :--- | :--- |
-| **\`TaskYar-Web-2.0-Mobile-UI-Hotfix.zip\`** | ۱۹۱ کیلوبایت | **پیشنهادی برای هاست‌های فعلی:** بسته سبک جهت اعمال سریع روی نصب‌های قبلی بدون نیاز به دانلود مجدد vendor یا تغییر دیتابیس |
-| **\`TaskYar-Web-2.0-Production-v2.0.2.zip\`** | ۱۳.۴ مگابایت | **نصب تازه:** بسته کامل پروداکشن شامل تمامی وابستگی‌های PHP 8.4 در \`vendor/\` و است‌های بیلدشده |
-| **\`SHA256SUMS.txt\`** | متنی | کدهای هش اعتبارسنجی جهت اطمینان از صحت فایل‌های دریافتی |
+| **\`TaskYar-Web-v2.0.2-Stable-Full.zip\`** | ۱۳.۴ مگابایت | **بسته کامل پروداکشن (نصب تازه یا ارتقای استاندارد):** شامل تمامی فایل‌های سورس لاراول، وابستگی‌های کامل PHP 8.4 در \`vendor/\`، است‌های کامپایل‌شده Vite و بدون نیاز به نصب کامپوزر روی هاست |
+| **\`TaskYar-Web-2.0-Mobile-UI-Hotfix.zip\`** | ۱۹۱ کیلوبایت | **بسته به‌روزرسانی سبک (هاست‌های فعلی):** جهت ارتقای سریع کدهای فرانت‌اند و بلید روی نصب‌های قبلی بدون نیاز به دانلود مجدد vendor |
+| **\`SHA256SUMS.txt\`** | متنی | کدهای هش اعتبارسنجی SHA-256 جهت اطمینان از صحت فایل‌های دریافتی |
+
+---
+
+### راهنماهای نصب و ارتقا (Documentation)
+- [راهنمای جامع نصب تازه روی هاست دایرکت‌ادمین](https://github.com/satinbest/taskyar-web/blob/main/docs/INSTALL_FRESH_FA.md)
+- [راهنمای جامع ارتقای ایمن و بدون ریسک درجا](https://github.com/satinbest/taskyar-web/blob/main/docs/UPGRADE_TO_V2.0.2_FA.md)
 
 ---
 
