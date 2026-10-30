@@ -194,8 +194,29 @@ async function publish() {
   let release;
 
   if (checkRes.statusCode === 200) {
-    console.log(`Release ${TAG_NAME} already exists. Fetching existing release details...`);
+    console.log(`Release ${TAG_NAME} already exists. Updating release details...`);
     release = JSON.parse(checkRes.data);
+    const updatePayload = JSON.stringify({
+      name: RELEASE_TITLE,
+      body: releaseNotes
+    });
+    const updateOptions = {
+      hostname: 'api.github.com',
+      path: `/repos/${REPO_OWNER}/${REPO_NAME}/releases/${release.id}`,
+      method: 'PATCH',
+      headers: {
+        'User-Agent': 'TaskYar-Publisher',
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28'
+      }
+    };
+    const updateRes = await httpsRequest(updateOptions, updatePayload);
+    if (updateRes.statusCode >= 200 && updateRes.statusCode < 300) {
+      console.log('✓ Release title and notes updated successfully.');
+      release = JSON.parse(updateRes.data);
+    }
   } else {
     console.log(`Creating new GitHub Release ${TAG_NAME}...`);
     const createPayload = JSON.stringify({
@@ -240,7 +261,25 @@ async function publish() {
       const fileName = path.basename(asset.path);
       const existing = existingAssets.find(a => a.name === fileName);
       if (existing) {
-        console.log(`Asset ${fileName} already attached to release.`);
+        if (fileName === 'SHA256SUMS.txt') {
+          console.log(`Replacing ${fileName} with latest version...`);
+          const delOptions = {
+            hostname: 'api.github.com',
+            path: `/repos/${REPO_OWNER}/${REPO_NAME}/releases/assets/${existing.id}`,
+            method: 'DELETE',
+            headers: {
+              'User-Agent': 'TaskYar-Publisher',
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'application/vnd.github+json',
+              'X-GitHub-Api-Version': '2022-11-28'
+            }
+          };
+          await httpsRequest(delOptions);
+          await uploadAsset(release.upload_url, asset.path, asset.type, token);
+          console.log(`✓ Replaced ${fileName}`);
+        } else {
+          console.log(`Asset ${fileName} already attached to release.`);
+        }
       } else {
         await uploadAsset(release.upload_url, asset.path, asset.type, token);
         console.log(`✓ Attached ${fileName}`);
