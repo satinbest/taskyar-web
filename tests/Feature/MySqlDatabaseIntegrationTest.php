@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Tag;
 use App\Models\Task;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
@@ -13,17 +14,11 @@ use Tests\TestCase;
 
 class MySqlDatabaseIntegrationTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
-
-        // Switch to the real MySQL test database
-        config([
-            'database.default' => 'mysql',
-            'database.connections.mysql.database' => 'taskyar_test_clean',
-            'session.driver' => 'database',
-            'session.connection' => 'mysql',
-        ]);
 
         // Ensure database connection is active
         try {
@@ -31,6 +26,13 @@ class MySqlDatabaseIntegrationTest extends TestCase
         } catch (\Throwable $e) {
             $this->markTestSkipped('Local MySQL/MariaDB service is not available: '.$e->getMessage());
         }
+
+        // Switch to the active MySQL test database
+        config([
+            'database.default' => 'mysql',
+            'session.driver' => 'database',
+            'session.connection' => 'mysql',
+        ]);
     }
 
     public function test_mysql_schema_has_all_required_tables_and_key_limits(): void

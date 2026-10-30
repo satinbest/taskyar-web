@@ -35,7 +35,8 @@ class TaskUserIsolationTest extends TestCase
             ->assertJsonPath('task.alarm_enabled', true)
             ->assertJsonPath('task.important', true);
 
-        $task = Task::first();
+        $taskId = $response->json('task.id');
+        $task = Task::findOrFail($taskId);
         $this->assertEquals($user->id, $task->user_id);
         $this->assertEquals(2, $task->subtasks()->count());
     }
